@@ -16,21 +16,21 @@ public class ClientRepositoryImpl implements ClientRepository {
 
     @Override
     public void create(Client client) throws SQLException {
-        String sql = "INSERT INTO clients (name, address, phone, is_professional) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO clients (name, address, phoneNumber, isProfessional) VALUES (?, ?, ?, ?)";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setString(1, client.getName());
             stmt.setString(2, client.getAddress());
-            stmt.setString(3, client.getPhone());
+            stmt.setString(3, client.getPhoneNumber());
             stmt.setBoolean(4, client.isProfessional());
             stmt.executeUpdate();
         }
     }
 
     @Override
-    public Client read(int clientId) throws SQLException {
-        String sql = "SELECT * FROM clients WHERE client_id = ?";
+    public Client read(int id) throws SQLException {
+        String sql = "SELECT * FROM clients WHERE id = ?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setInt(1, clientId);
+            stmt.setInt(1, id);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
                 return mapRowToClient(rs);
@@ -54,11 +54,11 @@ public class ClientRepositoryImpl implements ClientRepository {
 
     @Override
     public void update(Client client) throws SQLException {
-        String sql = "UPDATE clients SET name = ?, address = ?, phone = ?, is_professional = ? WHERE client_id = ?";
+        String sql = "UPDATE clients SET name = ?, address = ?, phoneNumber = ?, isProfessional = ? WHERE id = ?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setString(1, client.getName());
             stmt.setString(2, client.getAddress());
-            stmt.setString(3, client.getPhone());
+            stmt.setString(3, client.getPhoneNumber());
             stmt.setBoolean(4, client.isProfessional());
             stmt.setInt(5, client.getClientId());
             stmt.executeUpdate();
@@ -66,21 +66,21 @@ public class ClientRepositoryImpl implements ClientRepository {
     }
 
     @Override
-    public void delete(int clientId) throws SQLException {
-        String sql = "DELETE FROM clients WHERE client_id = ?";
+    public void delete(int id) throws SQLException {
+        String sql = "DELETE FROM clients WHERE id = ?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setInt(1, clientId);
+            stmt.setInt(1, id);
             stmt.executeUpdate();
         }
     }
 
     private Client mapRowToClient(ResultSet rs) throws SQLException {
         return new Client(
-                rs.getInt("client_id"),
+                rs.getInt("id"),
                 rs.getString("name"),
                 rs.getString("address"),
-                rs.getString("phone"),
-                rs.getBoolean("is_professional")
+                rs.getString("phoneNumber"),
+                rs.getBoolean("isProfessional")
         );
     }
 }

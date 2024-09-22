@@ -93,7 +93,7 @@ public class Main {
                 System.out.println("Client trouvé !");
                 System.out.println("Nom : " + foundClient.getName());
                 System.out.println("Adresse : " + foundClient.getAddress());
-                System.out.println("Numéro de téléphone : " + foundClient.getPhone());
+                System.out.println("Numéro de téléphone : " + foundClient.getPhoneNumber());
 
                 System.out.print("Souhaitez-vous continuer avec ce client ? (y/n) : ");
                 char continueWithClient = scanner.next().charAt(0);
@@ -135,3 +135,4 @@ public class Main {
         }
     }
 }
+
