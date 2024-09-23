@@ -5,6 +5,7 @@ package com.dao;
 import com.dao.ProjectRepository;
 import com.db.DatabaseConnection;
 import com.models.Project;
+import com.models.ProjectStatus;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -19,18 +20,32 @@ public class ProjectRepositoryImpl implements ProjectRepository {
     }
 
     @Override
-    public void createProject(Project project) throws SQLException {
-        String query = "INSERT INTO projects (projectName, surfaceArea, profitMargin, totalCost, projectStatus, clientID) VALUES (?, ?, ?, ?, ?, ?)";
+    public int createProject(Project project) throws SQLException {
+        String query = "INSERT INTO projects (projectName, surfaceArea, profitMargin, totalCost, projectStatus, clientID) VALUES (?, ?, ?, ?, ?, ?) RETURNING id";
+
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setString(1, project.getProjectName());
             stmt.setDouble(2, project.getSurfaceArea());
             stmt.setDouble(3, project.getProfitMargin());
             stmt.setDouble(4, project.getTotalCost());
-            stmt.setString(5, project.getProjectStatus());
+
+            // Use projectStatus's name() directly as ENUM
+            stmt.setObject(5, project.getProjectStatus().name(), Types.OTHER); // Pass as ENUM type
+
             stmt.setInt(6, project.getClientID());
-            stmt.executeUpdate();
+
+            // Execute the query and retrieve the generated ID
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);  // Return the generated project ID
+            } else {
+                throw new SQLException("Failed to create project, no ID obtained.");
+            }
         }
     }
+
+
+
 
     @Override
     public Project getProjectById(int id) throws SQLException {
@@ -45,7 +60,7 @@ public class ProjectRepositoryImpl implements ProjectRepository {
                         rs.getDouble("surfaceArea"),
                         rs.getDouble("profitMargin"),
                         rs.getDouble("totalCost"),
-                        rs.getString("projectStatus"),
+                        ProjectStatus.valueOf(rs.getString("projectStatus")), // Convert string to enum
                         rs.getInt("clientID")
                 );
             }
@@ -65,13 +80,14 @@ public class ProjectRepositoryImpl implements ProjectRepository {
                         rs.getDouble("surfaceArea"),
                         rs.getDouble("profitMargin"),
                         rs.getDouble("totalCost"),
-                        rs.getString("projectStatus"),
+                        ProjectStatus.valueOf(rs.getString("projectStatus")), // Convert string to enum
                         rs.getInt("clientID")
                 ));
             }
         }
         return projects;
     }
+
 
     @Override
     public void updateProject(Project project) throws SQLException {
@@ -81,12 +97,16 @@ public class ProjectRepositoryImpl implements ProjectRepository {
             stmt.setDouble(2, project.getSurfaceArea());
             stmt.setDouble(3, project.getProfitMargin());
             stmt.setDouble(4, project.getTotalCost());
-            stmt.setString(5, project.getProjectStatus());
+
+            // Set the project status using the enum's name()
+            stmt.setString(5, project.getProjectStatus().name());
+
             stmt.setInt(6, project.getClientID());
             stmt.setInt(7, project.getId());
             stmt.executeUpdate();
         }
     }
+
 
     @Override
     public void deleteProject(int id) throws SQLException {

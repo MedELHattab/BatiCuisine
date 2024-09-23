@@ -15,16 +15,21 @@ public class ClientRepositoryImpl implements ClientRepository {
     }
 
     @Override
-    public void create(Client client) throws SQLException {
-        String sql = "INSERT INTO clients (name, address, phoneNumber, isProfessional) VALUES (?, ?, ?, ?)";
+    public int create(Client client) throws SQLException {
+        String sql = "INSERT INTO clients (name, address, phoneNumber, isProfessional) VALUES (?, ?, ?, ?) RETURNING id"; // Add RETURNING clause
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setString(1, client.getName());
             stmt.setString(2, client.getAddress());
             stmt.setString(3, client.getPhoneNumber());
             stmt.setBoolean(4, client.isProfessional());
-            stmt.executeUpdate();
+            ResultSet rs = stmt.executeQuery(); // Use executeQuery to get the generated ID
+            if (rs.next()) {
+                return rs.getInt("id"); // Return the generated ID
+            }
+            throw new SQLException("Failed to retrieve client ID."); // Throw an exception if ID is not retrieved
         }
     }
+
 
     @Override
     public Client read(int id) throws SQLException {

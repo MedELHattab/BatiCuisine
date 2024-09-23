@@ -35,7 +35,6 @@ public abstract class Component {
         this.cost = cost;
     }
 
-    // Abstract method to be implemented by subclasses for cost calculation
+    // Abstract method for cost calculation to be implemented in subclasses
     public abstract double calculateCost();
 }
-

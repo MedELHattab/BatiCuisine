@@ -1,16 +1,32 @@
 package com.models;
 
 public class Labor extends Component {
+    private String laborType;
     private double hourlyRate;
-    private double hoursWorked;
-    private double productivityFactor;
+    private double workHours;
+    private double workerProductivity;
 
-    public Labor(int id, String name, double hourlyRate, double hoursWorked, double productivityFactor) {
-        super(id, name, 0); // Cost will be calculated later
+    public Labor(int id, String name, String laborType, double hourlyRate, double workHours, double workerProductivity) {
+        super(id, name, hourlyRate * workHours * workerProductivity);  // Initial cost calculation
+        this.laborType = laborType;
         this.hourlyRate = hourlyRate;
-        this.hoursWorked = hoursWorked;
-        this.productivityFactor = productivityFactor;
-        this.cost = calculateCost();
+        this.workHours = workHours;
+        this.workerProductivity = workerProductivity;
+    }
+
+    @Override
+    public double calculateCost() {
+        // Calculate labor cost based on hourly rate, work hours, and worker productivity
+        return hourlyRate * workHours * workerProductivity;
+    }
+
+    // Getters and Setters
+    public String getLaborType() {
+        return laborType;
+    }
+
+    public void setLaborType(String laborType) {
+        this.laborType = laborType;
     }
 
     public double getHourlyRate() {
@@ -21,25 +37,19 @@ public class Labor extends Component {
         this.hourlyRate = hourlyRate;
     }
 
-    public double getHoursWorked() {
-        return hoursWorked;
+    public double getWorkHours() {
+        return workHours;
     }
 
-    public void setHoursWorked(double hoursWorked) {
-        this.hoursWorked = hoursWorked;
+    public void setWorkHours(double workHours) {
+        this.workHours = workHours;
     }
 
-    public double getProductivityFactor() {
-        return productivityFactor;
+    public double getWorkerProductivity() {
+        return workerProductivity;
     }
 
-    public void setProductivityFactor(double productivityFactor) {
-        this.productivityFactor = productivityFactor;
-    }
-
-    @Override
-    public double calculateCost() {
-        return hoursWorked * hourlyRate * productivityFactor;
+    public void setWorkerProductivity(double workerProductivity) {
+        this.workerProductivity = workerProductivity;
     }
 }
-

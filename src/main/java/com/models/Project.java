@@ -1,15 +1,16 @@
 package com.models;
 
 public class Project {
+
     private int id;
     private String projectName;
     private double surfaceArea;
     private double profitMargin;
     private double totalCost;
-    private String projectStatus;
+    private ProjectStatus projectStatus;
     private int clientID;
 
-    public Project(int id, String projectName, double surfaceArea, double profitMargin, double totalCost, String projectStatus, int clientID) {
+    public Project(int id, String projectName, double surfaceArea, double profitMargin, double totalCost, ProjectStatus projectStatus, int clientID) {
         this.id = id;
         this.projectName = projectName;
         this.surfaceArea = surfaceArea;
@@ -20,6 +21,11 @@ public class Project {
     }
 
     // Getters
+
+    public ProjectStatus getProjectStatus() {
+        return projectStatus; // This should return the enum
+    }
+
     public int getId() {
         return id;
     }
@@ -38,10 +44,6 @@ public class Project {
 
     public double getTotalCost() {
         return totalCost;
-    }
-
-    public String getProjectStatus() {
-        return projectStatus;
     }
 
     public int getClientID() {
@@ -69,7 +71,7 @@ public class Project {
         this.totalCost = totalCost;
     }
 
-    public void setProjectStatus(String projectStatus) {
+    public void setProjectStatus(ProjectStatus projectStatus) {
         this.projectStatus = projectStatus;
     }
 

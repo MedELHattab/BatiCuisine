@@ -15,8 +15,8 @@ public class ProjectService {
         this.projectRepository = new ProjectRepositoryImpl();
     }
 
-    public void createProject(Project project) throws SQLException {
-        projectRepository.createProject(project);
+    public int createProject(Project project) throws SQLException {
+        return projectRepository.createProject(project);
     }
 
     public Project getProjectById(int id) throws SQLException {
