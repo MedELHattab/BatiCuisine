@@ -191,6 +191,12 @@ public class Main {
 
     private static void addComponents(Scanner scanner, ComponentService componentService, int projectId) {
         boolean addingComponents = true;
+        double totalMaterialCost = 0.0;
+        double totalLaborCost = 0.0;
+
+        // Lists to keep track of materials and labor details for display
+        StringBuilder materialDetails = new StringBuilder();
+        StringBuilder laborDetails = new StringBuilder();
 
         while (addingComponents) {
             System.out.println("--- Ajout de composants ---");
@@ -200,9 +206,20 @@ public class Main {
 
             try {
                 if (componentType == 1) {
-                    addMaterial(scanner, componentService, projectId);
+                    Material material = addMaterial(scanner, componentService, projectId);
+                    totalMaterialCost += material.calculateCost(); // Assuming calculateCost() method exists
+                    materialDetails.append("- ").append(material.getName()).append(" : ").append(material.calculateCost())
+                            .append(" € (quantité : ").append(material.getQuantity())
+                            .append(", coût unitaire : ").append(material.getUnitCost())
+                            .append(" €/").append(", qualité : ").append(material.getQualityCoefficient())
+                            .append(", transport : ").append(material.getTransportCost()).append(" €)\n");
                 } else if (componentType == 2) {
-                    addLabor(scanner, componentService, projectId);
+                    Labor labor = addLabor(scanner, componentService, projectId);
+                    totalLaborCost += labor.calculateCost(); // Assuming calculateCost() method exists
+                    laborDetails.append("- ").append(labor.getLaborType()).append(" : ").append(labor.calculateCost())
+                            .append(" € (taux horaire : ").append(labor.getHourlyRate())
+                            .append(" €/h, heures travaillées : ").append(labor.getWorkHours())
+                            .append(" h, productivité : ").append(labor.getProductivity()).append(")\n");
                 } else {
                     System.out.println("Option invalide.");
                 }
@@ -215,9 +232,11 @@ public class Main {
                 System.err.println("Erreur lors de l'ajout du composant : " + e.getMessage());
             }
         }
-    }
 
-    private static void addMaterial(Scanner scanner, ComponentService componentService, int projectId) throws SQLException {
+        // Calculate and display costs when done adding components
+        displayCostSummary(materialDetails, totalMaterialCost, laborDetails, totalLaborCost);
+    }
+    private static Material addMaterial(Scanner scanner, ComponentService componentService, int projectId) throws SQLException {
         System.out.print("Entrez le nom du matériau : ");
         String materialName = scanner.nextLine();
         System.out.print("Entrez la quantité : ");
@@ -235,11 +254,12 @@ public class Main {
         Material material = new Material(0, materialName, quantity, unitCost, transportCost, qualityCoefficient, tvaRate); // Add tvaRate to Material constructor
         componentService.addComponent(material, projectId);
         System.out.println("Matériau ajouté avec succès !");
+        return material;
     }
 
 
 
-    private static void addLabor(Scanner scanner, ComponentService componentService, int projectId) throws SQLException {
+    private static Labor addLabor(Scanner scanner, ComponentService componentService, int projectId) throws SQLException {
         System.out.print("Entrez le type de main-d'œuvre (e.g., Ouvrier de base, Spécialiste) : ");
         String laborType = scanner.nextLine();
         System.out.print("Entrez le taux horaire : ");
@@ -255,7 +275,31 @@ public class Main {
         Labor labor = new Labor(0, laborType, laborType, hourlyRate, workHours, productivityFactor, tvaRate); // Add tvaRate to Labor constructor
         componentService.addComponent(labor, projectId);
         System.out.println("Main-d'œuvre ajoutée avec succès !");
+        return labor;
     }
 
+    private static void displayCostSummary(StringBuilder materialDetails, double totalMaterialCost,
+                                           StringBuilder laborDetails, double totalLaborCost) {
+        double vatRate = 0.20; // Example VAT rate
+        double totalBeforeMargin = totalMaterialCost + totalLaborCost;
+        double profitMarginPercentage = 0.15; // Example profit margin
+        double profitMargin = totalBeforeMargin * profitMarginPercentage;
+        double finalTotalCost = totalBeforeMargin + profitMargin;
+
+        // Display the costs
+        System.out.println("1. Matériaux :");
+        System.out.println(materialDetails.toString());
+        System.out.printf("**Coût total des matériaux avant TVA : %.2f €**\n", totalMaterialCost);
+        System.out.printf("**Coût total des matériaux avec TVA (%.0f%%) : %.2f €**\n", vatRate * 100, totalMaterialCost * (1 + vatRate));
+
+        System.out.println("2. Main-d'œuvre :");
+        System.out.println(laborDetails.toString());
+        System.out.printf("**Coût total de la main-d'œuvre avant TVA : %.2f €**\n", totalLaborCost);
+        System.out.printf("**Coût total de la main-d'œuvre avec TVA (%.0f%%) : %.2f €**\n", vatRate * 100, totalLaborCost * (1 + vatRate));
+
+        System.out.printf("3. Coût total avant marge : %.2f €\n", totalBeforeMargin);
+        System.out.printf("4. Marge bénéficiaire (%.0f%%) : %.2f €\n", profitMarginPercentage * 100, profitMargin);
+        System.out.printf("**Coût total final du projet : %.2f €**\n", finalTotalCost);
+    }
 
 }

@@ -59,4 +59,8 @@ public class Labor extends Component {
     public double getTvaRate() {
        return tvaRate;
     }
+
+    public double getProductivity() {
+    return workerProductivity;
+    }
 }
