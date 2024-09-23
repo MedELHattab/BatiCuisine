@@ -36,7 +36,8 @@ public class ComponentRepositoryImpl implements ComponentRepository {
                             materialRs.getDouble("quantity"),
                             materialRs.getDouble("unitCost"),
                             materialRs.getDouble("transportCost"),
-                            materialRs.getDouble("qualityCoefficient")
+                            materialRs.getDouble("qualityCoefficient"),
+                            materialRs.getDouble("tvaRate")
                     );
                     components.add(material);
                 }
@@ -55,7 +56,8 @@ public class ComponentRepositoryImpl implements ComponentRepository {
                             laborRs.getString("laborType"),
                             laborRs.getDouble("hourlyRate"),
                             laborRs.getDouble("workHours"),
-                            laborRs.getDouble("workerProductivity")
+                            laborRs.getDouble("workerProductivity"),
+                            laborRs.getDouble("tvaRate")
                     );
                     components.add(labor);
                 }
@@ -69,7 +71,7 @@ public class ComponentRepositoryImpl implements ComponentRepository {
     public void addComponent(Component component, int projectId) throws SQLException {
         if (component instanceof Material) {
             Material material = (Material) component;
-            String materialQuery = "INSERT INTO materials (projectid, name, componentType, quantity, unitCost, transportCost, qualityCoefficient) VALUES (?, ?, ?, ?, ?, ?, ?)";
+            String materialQuery = "INSERT INTO materials (projectid, name, componentType, quantity, unitCost, transportCost, qualityCoefficient, tvaRate) VALUES (?, ?, ?, ?, ?, ?, ?,?)";
             try (PreparedStatement materialStmt = connection.prepareStatement(materialQuery)) {
                 materialStmt.setInt(1, projectId);
                 materialStmt.setString(2, material.getName());
@@ -78,11 +80,12 @@ public class ComponentRepositoryImpl implements ComponentRepository {
                 materialStmt.setDouble(5, material.getUnitCost());
                 materialStmt.setDouble(6, material.getTransportCost());
                 materialStmt.setDouble(7, material.getQualityCoefficient());
+                materialStmt.setDouble(8,material.getTvaRate());
                 materialStmt.executeUpdate();
             }
         } else if (component instanceof Labor) {
             Labor labor = (Labor) component;
-            String laborQuery = "INSERT INTO labors (projectid, name, componentType, laborType, hourlyRate, workHours, workerProductivity) VALUES (?, ?, ?, ?, ?, ?, ?)";
+            String laborQuery = "INSERT INTO labors (projectid, name, componentType, laborType, hourlyRate, workHours, workerProductivity, tvaRate) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
             try (PreparedStatement laborStmt = connection.prepareStatement(laborQuery)) {
                 laborStmt.setInt(1, projectId);
                 laborStmt.setString(2, labor.getName());
@@ -91,6 +94,7 @@ public class ComponentRepositoryImpl implements ComponentRepository {
                 laborStmt.setDouble(5, labor.getHourlyRate());
                 laborStmt.setDouble(6, labor.getWorkHours());
                 laborStmt.setDouble(7, labor.getWorkerProductivity());
+                laborStmt.setDouble(8, labor.getTvaRate());
                 laborStmt.executeUpdate();
             }
         }

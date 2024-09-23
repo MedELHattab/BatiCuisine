@@ -5,13 +5,15 @@ public class Material extends Component {
     private double unitCost;
     private double transportCost;
     private double qualityCoefficient;
+    private double tvaRate;
 
-    public Material(int id, String name, double quantity, double unitCost, double transportCost, double qualityCoefficient) {
+    public Material(int id, String name, double quantity, double unitCost, double transportCost, double qualityCoefficient, double tvaRate) {
         super(id, name, unitCost * quantity);  // Initial cost calculation based on unit cost and quantity
         this.quantity = quantity;
         this.unitCost = unitCost;
         this.transportCost = transportCost;
         this.qualityCoefficient = qualityCoefficient;
+        this.tvaRate = tvaRate;
     }
 
     @Override
@@ -51,5 +53,9 @@ public class Material extends Component {
 
     public void setQualityCoefficient(double qualityCoefficient) {
         this.qualityCoefficient = qualityCoefficient;
+    }
+
+    public double getTvaRate() {
+        return tvaRate;
     }
 }

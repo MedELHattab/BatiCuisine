@@ -228,16 +228,19 @@ public class Main {
         double transportCost = scanner.nextDouble();
         System.out.print("Entrez le coefficient de qualité : ");
         double qualityCoefficient = scanner.nextDouble();
+        System.out.print("Entrez le taux de TVA (%) : ");
+        double tvaRate = scanner.nextDouble(); // Add TVA rate input
         scanner.nextLine(); // Consume newline
 
-        Material material = new Material(0, materialName, quantity, unitCost, transportCost, qualityCoefficient);
+        Material material = new Material(0, materialName, quantity, unitCost, transportCost, qualityCoefficient, tvaRate); // Add tvaRate to Material constructor
         componentService.addComponent(material, projectId);
         System.out.println("Matériau ajouté avec succès !");
     }
 
 
+
     private static void addLabor(Scanner scanner, ComponentService componentService, int projectId) throws SQLException {
-        System.out.print("Entrez le type de main-d'œuvre : ");
+        System.out.print("Entrez le type de main-d'œuvre (e.g., Ouvrier de base, Spécialiste) : ");
         String laborType = scanner.nextLine();
         System.out.print("Entrez le taux horaire : ");
         double hourlyRate = scanner.nextDouble();
@@ -245,11 +248,14 @@ public class Main {
         double workHours = scanner.nextDouble();
         System.out.print("Entrez le facteur de productivité : ");
         double productivityFactor = scanner.nextDouble();
+        System.out.print("Entrez le taux de TVA (%) : ");
+        double tvaRate = scanner.nextDouble(); // Add TVA rate input
         scanner.nextLine(); // Consume newline
 
-        Labor labor = new Labor(0, laborType, laborType, hourlyRate, workHours, productivityFactor);
+        Labor labor = new Labor(0, laborType, laborType, hourlyRate, workHours, productivityFactor, tvaRate); // Add tvaRate to Labor constructor
         componentService.addComponent(labor, projectId);
         System.out.println("Main-d'œuvre ajoutée avec succès !");
     }
+
 
 }

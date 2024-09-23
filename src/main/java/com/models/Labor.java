@@ -5,13 +5,16 @@ public class Labor extends Component {
     private double hourlyRate;
     private double workHours;
     private double workerProductivity;
+    private double tvaRate;
 
-    public Labor(int id, String name, String laborType, double hourlyRate, double workHours, double workerProductivity) {
+
+    public Labor(int id, String name, String laborType, double hourlyRate, double workHours, double workerProductivity, double tvaRate) {
         super(id, name, hourlyRate * workHours * workerProductivity);  // Initial cost calculation
         this.laborType = laborType;
         this.hourlyRate = hourlyRate;
         this.workHours = workHours;
         this.workerProductivity = workerProductivity;
+        this.tvaRate = tvaRate;
     }
 
     @Override
@@ -51,5 +54,9 @@ public class Labor extends Component {
 
     public void setWorkerProductivity(double workerProductivity) {
         this.workerProductivity = workerProductivity;
+    }
+
+    public double getTvaRate() {
+       return tvaRate;
     }
 }
