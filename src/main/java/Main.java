@@ -12,6 +12,7 @@ import java.time.format.DateTimeParseException;
 
 import java.sql.SQLException;
 
+
 public class Main {
     public static void main(String[] args) throws SQLException {
         Scanner scanner = new Scanner(System.in);
@@ -20,7 +21,6 @@ public class Main {
         ClientService clientService;
         ProjectService projectService;
         ComponentService componentService;
-        DevisService devisService;
 
         try {
             clientService = new ClientService();
@@ -38,9 +38,8 @@ public class Main {
             System.out.println("2. Afficher les projets existants");
             System.out.println("3. Calculer le coût d'un projet");
             System.out.println("4. Quitter");
-            System.out.print("Choisissez une option : ");
-            int option = scanner.nextInt();
-            scanner.nextLine(); // Consume newline
+
+            int option = getValidOption(scanner);
 
             switch (option) {
                 case 1:
@@ -70,7 +69,6 @@ public class Main {
                     }
                     break;
 
-
                 case 3:
                     // Logic to calculate project cost (to be implemented)
                     System.out.println("Fonctionnalité non implémentée pour calculer le coût d'un projet.");
@@ -86,6 +84,28 @@ public class Main {
                     System.out.println("Option invalide. Veuillez réessayer.");
             }
         }
+    }
+
+    private static int getValidOption(Scanner scanner) {
+        int option = -1;
+        boolean isValid = false;
+
+        while (!isValid) {
+            System.out.print("Choisissez une option : ");
+            if (scanner.hasNextInt()) {
+                option = scanner.nextInt();
+                if (option >= 1 && option <= 4) {
+                    isValid = true;
+                } else {
+                    System.out.println("Veuillez entrer un nombre entre 1 et 4.");
+                }
+            } else {
+                System.out.println("Entrée invalide. Veuillez entrer un nombre.");
+                scanner.next(); // Discard invalid input
+            }
+        }
+        scanner.nextLine(); // Consume the newline
+        return option;
     }
 
     private static void handleClientSearchOrAdd(Scanner scanner, ClientService clientService, ProjectService projectService, ComponentService componentService) throws SQLException {
