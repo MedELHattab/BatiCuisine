@@ -8,6 +8,7 @@ import com.models.ProjectStatus;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 
 public class ProjectService {
 
@@ -25,7 +26,7 @@ public class ProjectService {
         return projectRepository.getProjectById(id);
     }
 
-    public List<Project> getAllProjects() throws SQLException {
+    public Map<Integer, Project> getAllProjects() throws SQLException {
         return projectRepository.getAllProjects();
     }
 

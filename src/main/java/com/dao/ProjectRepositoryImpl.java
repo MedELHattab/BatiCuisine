@@ -10,7 +10,9 @@ import com.models.ProjectStatus;
 import javax.print.attribute.standard.MediaSize;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ProjectRepositoryImpl implements ProjectRepository {
 
@@ -67,28 +69,30 @@ public class ProjectRepositoryImpl implements ProjectRepository {
         }
     }
 
+
     @Override
-    public List<Project> getAllProjects() throws SQLException {
-        List<Project> projects = new ArrayList<>();
-        String query = "SELECT * FROM projects";
-        try (Statement stmt = connection.createStatement(); ResultSet rs = stmt.executeQuery(query)) {
+    public Map<Integer, Project> getAllProjects() throws SQLException {
+        Map<Integer, Project> projects = new HashMap<>();
+        String query = "SELECT * FROM projects"; // Modify as needed based on your project table structure
+
+        try (PreparedStatement stmt = connection.prepareStatement(query);
+             ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
-                projects.add(new Project(
-                        rs.getInt("id"),
-                        rs.getString("projectName"),
-                        rs.getDouble("surfaceArea"),
-                        rs.getDouble("profitMargin"),
-                        rs.getDouble("totalCost"),
-                        ProjectStatus.valueOf(rs.getString("projectStatus")), // Convert string to enum
-                        rs.getInt("clientID")
-                ));
+                int id = rs.getInt("id");
+                String projectName = rs.getString("projectName");
+                double surfaceArea = rs.getDouble("surfaceArea");
+                double profitMargin = rs.getDouble("profitMargin");
+                double totalCost = rs.getDouble("totalCost");
+                ProjectStatus projectStatus = ProjectStatus.valueOf(rs.getString("projectStatus")); // Adjust this if necessary
+
+                Project project = new Project(id, projectName, surfaceArea, profitMargin, totalCost, projectStatus);
+                projects.put(id, project);
             }
         }
         return projects;
     }
 
-
-    @Override
+        @Override
     public void updateProject(Project project) throws SQLException {
         String query = "UPDATE projects SET projectName = ?, surfaceArea = ?, profitMargin = ?, totalCost = ?, projectStatus = ?, clientID = ? WHERE id = ?";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {

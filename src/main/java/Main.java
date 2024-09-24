@@ -5,14 +5,12 @@ import com.services.ProjectService;
 import com.services.ComponentService;
 
 import java.sql.Date;
-import java.util.Locale;
+import java.util.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
 import java.sql.SQLException;
-import java.util.List;
-import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) throws SQLException {
@@ -50,9 +48,28 @@ public class Main {
                     break;
 
                 case 2:
-                    // Logic to display existing projects (to be implemented)
-                    System.out.println("Fonctionnalité non implémentée pour afficher les projets existants.");
+                    try {
+                        Map<Integer, Project> projects = projectService.getAllProjects();
+                        if (projects.isEmpty()) {
+                            System.out.println("Aucun projet existant.");
+                        } else {
+                            System.out.println("--- Projets Existants ---");
+                            for (Map.Entry<Integer, Project> entry : projects.entrySet()) {
+                                Project project = entry.getValue();
+                                Optional<Project> optionalProject = Optional.ofNullable(project);
+                                optionalProject.ifPresent(p -> System.out.println("ID: " + p.getId() +
+                                        ", Nom: " + p.getProjectName() +
+                                        ", Surface: " + p.getSurfaceArea() +
+                                        ", Marge: " + p.getProfitMargin() +
+                                        ", Coût Total: " + p.getTotalCost() +
+                                        ", Statut: " + p.getProjectStatus()));
+                            }
+                        }
+                    } catch (SQLException e) {
+                        System.err.println("Erreur lors de l'affichage des projets : " + e.getMessage());
+                    }
                     break;
+
 
                 case 3:
                     // Logic to calculate project cost (to be implemented)

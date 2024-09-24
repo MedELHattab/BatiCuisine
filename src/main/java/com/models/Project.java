@@ -20,6 +20,15 @@ public class Project {
         this.clientID = clientID;
     }
 
+    public Project(int id, String projectName, double surfaceArea, double profitMargin, double totalCost, ProjectStatus projectStatus) {
+        this.id = id;
+        this.projectName = projectName;
+        this.surfaceArea = surfaceArea;
+        this.profitMargin = profitMargin;
+        this.totalCost = totalCost;
+        this.projectStatus = projectStatus;
+    }
+
     // Getters
 
     public ProjectStatus getProjectStatus() {
@@ -77,6 +86,11 @@ public class Project {
 
     public void setClientID(int clientID) {
         this.clientID = clientID;
+    }
+
+    @Override
+    public String toString() {
+        return "Project ID: " + id + ", Name: " + projectName + ", Total Cost: " + totalCost + " €, Status: " + projectStatus;
     }
 }
 
