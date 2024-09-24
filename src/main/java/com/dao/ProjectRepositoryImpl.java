@@ -7,6 +7,7 @@ import com.db.DatabaseConnection;
 import com.models.Project;
 import com.models.ProjectStatus;
 
+import javax.print.attribute.standard.MediaSize;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,8 +44,6 @@ public class ProjectRepositoryImpl implements ProjectRepository {
             }
         }
     }
-
-
 
 
     @Override
@@ -113,6 +112,25 @@ public class ProjectRepositoryImpl implements ProjectRepository {
         String query = "DELETE FROM projects WHERE id = ?";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setInt(1, id);
+            stmt.executeUpdate();
+        }
+    }
+
+    @Override
+    public void updateTotalCost(int projectId, double totalCost) throws SQLException {
+        String query = "UPDATE projects SET totalCost = ? WHERE id = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setDouble(1, totalCost);
+            stmt.setInt(2, projectId);
+            stmt.executeUpdate();
+        }
+
+    }
+    public void updateProjectStatus(int projectId, ProjectStatus status) throws SQLException {
+        String query = "UPDATE projects SET projectStatus = ? WHERE id = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setObject(1, status.name(), Types.OTHER);
+            stmt.setInt(2, projectId);
             stmt.executeUpdate();
         }
     }

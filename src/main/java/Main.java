@@ -1,22 +1,28 @@
 import com.models.*;
 import com.services.ClientService;
+import com.services.DevisService;
 import com.services.ProjectService;
 import com.services.ComponentService;
-import java.util.Locale;
 
+import java.sql.Date;
+import java.util.Locale;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Scanner;
 
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws SQLException {
         Scanner scanner = new Scanner(System.in);
         scanner.useLocale(Locale.US);
 
         ClientService clientService;
         ProjectService projectService;
         ComponentService componentService;
+        DevisService devisService;
 
         try {
             clientService = new ClientService();
@@ -65,7 +71,7 @@ public class Main {
         }
     }
 
-    private static void handleClientSearchOrAdd(Scanner scanner, ClientService clientService, ProjectService projectService, ComponentService componentService) {
+    private static void handleClientSearchOrAdd(Scanner scanner, ClientService clientService, ProjectService projectService, ComponentService componentService) throws SQLException {
         System.out.println("--- Recherche de client ---");
         System.out.println("Souhaitez-vous chercher un client existant ou en ajouter un nouveau ?");
         System.out.println("1. Chercher un client existant");
@@ -75,12 +81,14 @@ public class Main {
         scanner.nextLine(); // Consume newline
 
         int clientId = 0; // Initialize clientId to 0
+        boolean isProfessional = false; // Initialize isProfessional
 
         switch (choice) {
             case 1:
                 Client existingClient = searchExistingClient(scanner, clientService); // Search for an existing client
                 if (existingClient != null) {
                     clientId = existingClient.getClientId(); // Get the ID of the existing client
+                    isProfessional = existingClient.isProfessional(); // Get the professional status
                 } else {
                     System.out.println("Aucun client trouvé.");
                     return; // Exit if no client is found
@@ -93,6 +101,8 @@ public class Main {
                     System.out.println("Erreur lors de l'ajout du client. Veuillez réessayer.");
                     return; // Exit if there was an error adding the client
                 }
+                // Retrieve the newly added client's professional status
+                isProfessional = clientService.getClientById(clientId).isProfessional(); // Fetch the client's status
                 break;
 
             default:
@@ -100,8 +110,8 @@ public class Main {
                 return;
         }
 
-        // Continue with project creation using the client ID
-        handleProjectCreation(scanner, projectService, componentService, clientId);
+        // Continue with project creation using the client ID and professional status
+        handleProjectCreation(scanner, projectService, componentService, clientId, isProfessional);
     }
 
     private static Client searchExistingClient(Scanner scanner, ClientService clientService) {
@@ -161,9 +171,7 @@ public class Main {
         }
     }
 
-
-
-    private static void handleProjectCreation(Scanner scanner, ProjectService projectService, ComponentService componentService, int clientId) {
+    private static void handleProjectCreation(Scanner scanner, ProjectService projectService, ComponentService componentService, int clientId, boolean isProfessional) {
         System.out.println("--- Création d'un Nouveau Projet ---");
         System.out.print("Entrez le nom du projet : ");
         String projectName = scanner.nextLine();
@@ -181,7 +189,7 @@ public class Main {
             System.out.println("Projet créé avec succès avec l'ID: " + projectId);
 
             // Add components to the newly created project using projectId
-            addComponents(scanner, componentService, projectId);
+            addComponents(scanner, componentService, projectService, projectId, isProfessional);
         } catch (SQLException e) {
             System.err.println("Erreur lors de la création du projet : " + e.getMessage());
         }
@@ -189,12 +197,13 @@ public class Main {
 
 
 
-    private static void addComponents(Scanner scanner, ComponentService componentService, int projectId) {
+    private static void addComponents(Scanner scanner, ComponentService componentService, ProjectService projectService, int projectId, boolean isProfessional) throws SQLException {
         boolean addingComponents = true;
         double totalMaterialCost = 0.0;
         double totalLaborCost = 0.0;
 
-        // Lists to keep track of materials and labor details for display
+        DevisService devisService = new DevisService();
+
         StringBuilder materialDetails = new StringBuilder();
         StringBuilder laborDetails = new StringBuilder();
 
@@ -207,7 +216,7 @@ public class Main {
             try {
                 if (componentType == 1) {
                     Material material = addMaterial(scanner, componentService, projectId);
-                    totalMaterialCost += material.calculateCost(); // Assuming calculateCost() method exists
+                    totalMaterialCost += material.calculateCost();
                     materialDetails.append("- ").append(material.getName()).append(" : ").append(material.calculateCost())
                             .append(" € (quantité : ").append(material.getQuantity())
                             .append(", coût unitaire : ").append(material.getUnitCost())
@@ -215,7 +224,7 @@ public class Main {
                             .append(", transport : ").append(material.getTransportCost()).append(" €)\n");
                 } else if (componentType == 2) {
                     Labor labor = addLabor(scanner, componentService, projectId);
-                    totalLaborCost += labor.calculateCost(); // Assuming calculateCost() method exists
+                    totalLaborCost += labor.calculateCost();
                     laborDetails.append("- ").append(labor.getLaborType()).append(" : ").append(labor.calculateCost())
                             .append(" € (taux horaire : ").append(labor.getHourlyRate())
                             .append(" €/h, heures travaillées : ").append(labor.getWorkHours())
@@ -233,9 +242,19 @@ public class Main {
             }
         }
 
-        // Calculate and display costs when done adding components
+        double totalCost = totalMaterialCost + totalLaborCost;
+        if (isProfessional) {
+            totalCost *= 0.99; // Apply 1% discount for professional clients
+        }
+
+        projectService.updateTotalCost(projectId, totalCost); // Update the project's total cost
         displayCostSummary(materialDetails, totalMaterialCost, laborDetails, totalLaborCost);
+
+        // Proceed to create the Devis (quote)
+
+        handleDevisCreation(scanner, projectId, totalCost, projectService, devisService);
     }
+
     private static Material addMaterial(Scanner scanner, ComponentService componentService, int projectId) throws SQLException {
         System.out.print("Entrez le nom du matériau : ");
         String materialName = scanner.nextLine();
@@ -300,6 +319,76 @@ public class Main {
         System.out.printf("3. Coût total avant marge : %.2f €\n", totalBeforeMargin);
         System.out.printf("4. Marge bénéficiaire (%.0f%%) : %.2f €\n", profitMarginPercentage * 100, profitMargin);
         System.out.printf("**Coût total final du projet : %.2f €**\n", finalTotalCost);
+    }
+
+
+    private static void handleDevisCreation(Scanner scanner, int projectId, double totalCost, ProjectService projectService, DevisService devisService) throws SQLException {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+        LocalDate issueDate = null;
+        LocalDate validityDate = null;
+
+        System.out.println("--- Enregistrement du Devis ---");
+
+        // Loop until the user provides valid dates where issueDate is before validityDate
+        boolean validDates = false;
+        while (!validDates) {
+            // Validate and transform the issue date
+            while (issueDate == null) {
+                System.out.print("Entrez la date d'émission du devis (format : jj/mm/aaaa) : ");
+                String issueDateString = scanner.nextLine();
+                try {
+                    issueDate = LocalDate.parse(issueDateString, formatter);
+                } catch (DateTimeParseException e) {
+                    System.out.println("Date d'émission invalide. Veuillez entrer une date valide au format jj/mm/aaaa.");
+                }
+            }
+
+            // Validate and transform the validity date
+            while (validityDate == null) {
+                System.out.print("Entrez la date de validité du devis (format : jj/mm/aaaa) : ");
+                String validityDateString = scanner.nextLine();
+                try {
+                    validityDate = LocalDate.parse(validityDateString, formatter);
+                } catch (DateTimeParseException e) {
+                    System.out.println("Date de validité invalide. Veuillez entrer une date valide au format jj/mm/aaaa.");
+                }
+            }
+
+            // Check if issueDate is before validityDate
+            if (issueDate.isBefore(validityDate)) {
+                validDates = true;  // Dates are valid
+            } else {
+                System.out.println("La date d'émission doit être antérieure à la date de validité. Veuillez réessayer.");
+                issueDate = null;  // Reset dates for new input
+                validityDate = null;
+            }
+        }
+
+        try {
+            // Convert LocalDate to java.sql.Date
+            Date sqlIssueDate = Date.valueOf(issueDate);
+            Date sqlValidityDate = Date.valueOf(validityDate);
+
+            // Create a new Devis instance with Date objects
+            Devis newDevis = new Devis(totalCost, sqlIssueDate, sqlValidityDate, projectId);
+
+            System.out.print("Souhaitez-vous enregistrer le devis ? (y/n) : ");
+            char saveDevis = scanner.next().charAt(0);
+            scanner.nextLine(); // Consume newline
+
+            if (saveDevis == 'y' || saveDevis == 'Y') {
+                newDevis.setAccepted(true);
+                projectService.updateProjectStatus(projectId, ProjectStatus.Completed);
+            } else {
+                projectService.updateProjectStatus(projectId, ProjectStatus.Canceled);
+            }
+
+            devisService.createDevis(newDevis); // Save the devis to the database
+            System.out.println("Devis enregistré avec succès !");
+        } catch (SQLException e) {
+            System.err.println("Erreur lors de l'enregistrement du devis : " + e.getMessage());
+        }
     }
 
 }

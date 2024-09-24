@@ -32,16 +32,23 @@ public class ClientRepositoryImpl implements ClientRepository {
 
 
     @Override
-    public Client read(int id) throws SQLException {
-        String sql = "SELECT * FROM clients WHERE id = ?";
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setInt(1, id);
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                return mapRowToClient(rs);
+    public Client getClientById(int clientId) throws SQLException {
+        String query = "SELECT * FROM clients WHERE id = ?";
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setInt(1, clientId);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    return new Client(
+                            resultSet.getInt("id"),
+                            resultSet.getString("name"),
+                            resultSet.getString("address"),
+                            resultSet.getString("phoneNumber"),
+                            resultSet.getBoolean("isProfessional")
+                    );
+                }
             }
         }
-        return null;
+        return null; // Return null if no client is found
     }
 
     @Override

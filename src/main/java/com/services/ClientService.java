@@ -17,8 +17,8 @@ public class ClientService {
         return clientRepository.create(client); // Ensure that this is returning the result from the repository layer
     }
 
-    public Client getClient(int clientId) throws SQLException {
-        return clientRepository.read(clientId);
+    public Client getClientById(int clientId) throws SQLException {
+        return clientRepository.getClientById(clientId);
     }
 
     public List<Client> getAllClients() throws SQLException {
